@@ -1,28 +1,18 @@
 package org.home.model
 
-import kotlinx.serialization.KSerializer
+import kotlinx.serialization.KeepGeneratedSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonElement
+import org.home.json.CatchAllJsonSerializer
+import org.home.json.OtherJsonNodesCollection
 
-@Serializable(with = CompleteSaveSerializer::class)
+@Serializable(with = CompleteSave.Serializer::class)
+@KeepGeneratedSerializer
 data class CompleteSave(
-    override val real: Real,
-    override val others: Map<String, JsonElement>
-) : ICompleteSave by real, Extensible<CompleteSave.Real> {
+    @SerialName("SslValue") val sslValue: SslValue,
+    private val _otherNodes: OtherJsonNodesCollection
+) {
 
-    @Serializable
-    data class Real(
-        @SerialName("SslValue") override val sslValue: SslValue
-    ) : ICompleteSave
+    object Serializer : CatchAllJsonSerializer<CompleteSave>(generatedSerializer())
 
 }
-
-interface ICompleteSave {
-    val sslValue: SslValue
-}
-
-object CompleteSaveSerializer : KSerializer<CompleteSave> by ExtensibleJsonSerializer(
-    realSerializer = CompleteSave.Real.serializer(),
-    factory = ::CompleteSave
-)

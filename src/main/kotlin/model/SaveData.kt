@@ -1,28 +1,18 @@
 package org.home.model
 
-import kotlinx.serialization.KSerializer
+import kotlinx.serialization.KeepGeneratedSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonElement
+import org.home.json.CatchAllJsonSerializer
+import org.home.json.OtherJsonNodesCollection
 
-@Serializable(with = SaveDataSerializer::class)
+@Serializable(with = SaveData.Serializer::class)
+@KeepGeneratedSerializer
 data class SaveData(
-    override val real: Real,
-    override val others: Map<String, JsonElement>
-) : ISaveData by real, Extensible<SaveData.Real> {
+    @SerialName("CompleteSave") val completeSave: CompleteSave,
+    private val _otherNodes: OtherJsonNodesCollection
+) {
 
-    @Serializable
-    data class Real(
-        @SerialName("CompleteSave") override val completeSave: CompleteSave
-    ) : ISaveData
+    object Serializer : CatchAllJsonSerializer<SaveData>(generatedSerializer())
 
 }
-
-interface ISaveData {
-    val completeSave: CompleteSave
-}
-
-object SaveDataSerializer : KSerializer<SaveData> by ExtensibleJsonSerializer(
-    realSerializer = SaveData.Real.serializer(),
-    factory = ::SaveData
-)

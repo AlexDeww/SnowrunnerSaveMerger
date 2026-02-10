@@ -1,29 +1,20 @@
 package org.home.model
 
-import kotlinx.serialization.KSerializer
+import kotlinx.serialization.KeepGeneratedSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonElement
-import org.home.model.IPersistentProfileData.DiscoveredTrucks
-import org.home.model.IPersistentProfileData.OwnedTrucks
+import org.home.json.CatchAllJsonSerializer
+import org.home.json.OtherJsonNodesCollection
 
-@Serializable(with = PersistentProfileDataSerializer::class)
+@Serializable(with = PersistentProfileData.Serializer::class)
+@KeepGeneratedSerializer
 data class PersistentProfileData(
-    override val real: Real,
-    override val others: Map<String, JsonElement>
-) : IPersistentProfileData by real, Extensible<PersistentProfileData.Real> {
+    @SerialName("discoveredTrucks") val discoveredTrucks: DiscoveredTrucks,
+    @SerialName("ownedTrucks") val ownedTrucks: OwnedTrucks,
+    private val _otherNodes: OtherJsonNodesCollection
+) {
 
-    @Serializable
-    data class Real(
-        @SerialName("discoveredTrucks") override val discoveredTrucks: DiscoveredTrucks,
-        @SerialName("ownedTrucks") override val ownedTrucks: OwnedTrucks,
-    ) : IPersistentProfileData
-
-}
-
-interface IPersistentProfileData {
-    val discoveredTrucks: DiscoveredTrucks
-    val ownedTrucks: OwnedTrucks
+    object Serializer : CatchAllJsonSerializer<PersistentProfileData>(generatedSerializer())
 
     @Serializable
     @JvmInline
@@ -38,9 +29,5 @@ interface IPersistentProfileData {
         @SerialName("current") val current: Int,
         @SerialName("all") val all: Int,
     )
-}
 
-object PersistentProfileDataSerializer : KSerializer<PersistentProfileData> by ExtensibleJsonSerializer(
-    realSerializer = PersistentProfileData.Real.serializer(),
-    factory = ::PersistentProfileData
-)
+}
