@@ -1,8 +1,5 @@
-@file:OptIn(ExperimentalSerializationApi::class)
-
 package org.home
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.*
 import org.home.model.SaveData
 import org.home.model.SslValue
@@ -15,10 +12,16 @@ import java.io.FilterInputStream
 
 private val Json = Json { ignoreUnknownKeys = true }
 
-fun main() {
-    val configFileBegin = File("C:\\Users\\deadi\\Desktop\\remote_s\\CompleteSave.cfg")
-    val configFileEnd = File("C:\\Users\\deadi\\Desktop\\remote_e\\CompleteSave.cfg")
-    val configFileTarget = File("J:\\Programs\\Steam\\userdata\\42206345\\1465360\\remote\\CompleteSave.cfg")
+fun main(args: Array<String>) {
+    val arguments = Arguments.parse(args)
+
+    if (arguments.targetFilePath.isEmpty()) println("target file path is empty").also { return }
+    if (arguments.beginFilePath.isEmpty()) println("begin file path is empty").also { return }
+    if (arguments.endFilePath.isEmpty()) println("end file path is empty").also { return }
+
+    val configFileTarget = File(arguments.targetFilePath)
+    val configFileBegin = File(arguments.beginFilePath)
+    val configFileEnd = File(arguments.endFilePath)
 
     mergeSaves(
         targetFile = configFileTarget,
@@ -73,11 +76,9 @@ private fun File.readSaveData(): SaveData = SaveConfigInputStream(inputStream())
     Json.decodeFromStream<SaveData>(it)
 }
 
-private fun File.writeSaveData(saveData: SaveData) {
-    outputStream().use {
-        Json.encodeToStream(saveData, it)
-        it.write(0)
-    }
+private fun File.writeSaveData(saveData: SaveData) = outputStream().use {
+    Json.encodeToStream(saveData, it)
+    it.write(0)
 }
 
 private class SaveConfigInputStream(fileStream: FileInputStream) : FilterInputStream(fileStream) {
