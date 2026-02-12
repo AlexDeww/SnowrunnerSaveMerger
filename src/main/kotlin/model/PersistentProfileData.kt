@@ -9,20 +9,32 @@ import org.home.json.OtherJsonNodesCollection
 @Serializable(with = PersistentProfileData.Serializer::class)
 @KeepGeneratedSerializer
 data class PersistentProfileData(
-    @SerialName("discoveredTrucks") val discoveredTrucks: DiscoveredTrucks,
-    @SerialName("ownedTrucks") val ownedTrucks: OwnedTrucks,
-    private val _otherNodes: OtherJsonNodesCollection
+    @SerialName("discoveredTrucks") val discoveredTrucks: DiscoveredTrucks = DiscoveredTrucks.EMPTY,
+    @SerialName("ownedTrucks") val ownedTrucks: OwnedTrucks = OwnedTrucks.EMPTY,
+    private val _otherNodes: OtherJsonNodesCollection = OtherJsonNodesCollection.EMPTY
 ) {
+
+    companion object {
+        val EMPTY = PersistentProfileData()
+    }
 
     object Serializer : CatchAllJsonSerializer<PersistentProfileData>(generatedSerializer())
 
     @Serializable
     @JvmInline
-    value class DiscoveredTrucks(val trucks: Map<String, DiscoveredTrucksItem>)
+    value class DiscoveredTrucks(val trucks: Map<String, DiscoveredTrucksItem>) {
+        companion object {
+            val EMPTY = DiscoveredTrucks(emptyMap())
+        }
+    }
 
     @Serializable
     @JvmInline
-    value class OwnedTrucks(val trucks: Map<String, Int>)
+    value class OwnedTrucks(val trucks: Map<String, Int>) {
+        companion object {
+            val EMPTY = OwnedTrucks(emptyMap())
+        }
+    }
 
     @Serializable
     data class DiscoveredTrucksItem(

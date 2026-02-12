@@ -9,9 +9,13 @@ import org.home.json.OtherJsonNodesCollection
 @Serializable(with = CompleteSave.Serializer::class)
 @KeepGeneratedSerializer
 data class CompleteSave(
-    @SerialName("SslValue") val sslValue: SslValue,
-    private val _otherNodes: OtherJsonNodesCollection
+    @SerialName("SslValue") val sslValue: SslValue = SslValue.EMPTY,
+    private val _otherNodes: OtherJsonNodesCollection = OtherJsonNodesCollection.EMPTY
 ) {
+
+    companion object {
+        val EMPTY = CompleteSave()
+    }
 
     object Serializer : CatchAllJsonSerializer<CompleteSave>(generatedSerializer())
 

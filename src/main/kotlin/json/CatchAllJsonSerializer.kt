@@ -18,7 +18,11 @@ private annotation class OtherJsonNodes
 @Serializable
 @OtherJsonNodes
 @JvmInline
-value class OtherJsonNodesCollection(val nodes: Map<String, JsonElement>)
+value class OtherJsonNodesCollection(val nodes: Map<String, JsonElement>) {
+    companion object {
+        val EMPTY = OtherJsonNodesCollection(emptyMap())
+    }
+}
 
 open class CatchAllJsonSerializer<T : Any>(
     serializer: KSerializer<T>

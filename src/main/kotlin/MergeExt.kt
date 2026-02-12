@@ -8,8 +8,8 @@ import org.home.utils.*
 context(helper: MergeObjectHelper<SslValue>)
 fun Prop<SslValue, SslValue.WatchPointsData>.merge() = with(helper) {
     doMerge { t, a, b ->
-        val diff = a.data.diff(b.data)
-        val data = t.data.applyDiff(diff) { o, n -> o.mergeMaxStrategy(o, n) }
+        val diff = a.data.diff(b.data, allowDelete = false)
+        val data = t.data.applyDiff(diff, ::mergeMaxStrategy)
         t.copy(data = data)
     }
 }
@@ -18,7 +18,7 @@ fun Prop<SslValue, SslValue.WatchPointsData>.merge() = with(helper) {
 context(helper: MergeObjectHelper<SslValue>)
 fun Prop<SslValue, SslValue.LevelGarageStatuses>.merge() = with(helper) {
     doMerge { t, a, b ->
-        SslValue.LevelGarageStatuses(t.statues.mergeMaxStrategy(a.statues, b.statues))
+        SslValue.LevelGarageStatuses(t.statuses.mergeMaxStrategy(a.statuses, b.statuses))
     }
 }
 
@@ -26,9 +26,10 @@ fun Prop<SslValue, SslValue.LevelGarageStatuses>.merge() = with(helper) {
 context(helper: MergeObjectHelper<SslValue>)
 fun Prop<SslValue, SslValue.ObjectiveStates>.merge() = with(helper) {
     doMerge { t, a, b ->
+        // TODO: Add 2Way merge logic
         val finishedObjs = targetObject.finishedObjs
-        val diff = a.state.diff(b.state).filter { it.key !in finishedObjs }
-        SslValue.ObjectiveStates(t.state.applyDiff(diff))
+        val diff = a.states.diff(b.states).filter { it.key !in finishedObjs }
+        SslValue.ObjectiveStates(t.states.applyDiff(diff))
     }
 }
 
@@ -36,8 +37,8 @@ fun Prop<SslValue, SslValue.ObjectiveStates>.merge() = with(helper) {
 context(helper: MergeObjectHelper<SslValue>)
 fun Prop<SslValue, SslValue.UpgradesGiverData>.merge() = with(helper) {
     doMerge { t, a, b ->
-        val diff = a.data.diff(b.data)
-        val data = t.data.applyDiff(diff) { o, n -> o.mergeMaxStrategy(o, n) }
+        val diff = a.data.diff(b.data, allowDelete = false)
+        val data = t.data.applyDiff(diff, ::mergeMaxStrategy)
         SslValue.UpgradesGiverData(data)
     }
 }
@@ -60,7 +61,7 @@ fun Prop<SslValue, PersistentProfileData>.merge(): PersistentProfileData = with(
 context(helper: MergeObjectHelper<PersistentProfileData>)
 fun Prop<PersistentProfileData, PersistentProfileData.DiscoveredTrucks>.merge() = with(helper) {
     doMerge { t, a, b ->
-        val diff = a.trucks.diff(b.trucks)
+        val diff = a.trucks.diff(b.trucks, allowDelete = false)
         val trucks = t.trucks.applyDiff(diff) { o, n -> if (n.current > o.current) n else o }
         PersistentProfileData.DiscoveredTrucks(trucks)
     }
@@ -70,7 +71,16 @@ fun Prop<PersistentProfileData, PersistentProfileData.DiscoveredTrucks>.merge() 
 context(helper: MergeObjectHelper<PersistentProfileData>)
 fun Prop<PersistentProfileData, PersistentProfileData.OwnedTrucks>.merge() = with(helper) {
     doMerge { t, a, b ->
-        val diff = a.trucks.diff(b.trucks)
+        val diff = a.trucks.diff(b.trucks, allowDelete = false)
         PersistentProfileData.OwnedTrucks(t.trucks.applyDiff(diff))
     }
 }
+
+private fun <T : Comparable<T>> mergeMaxStrategy(
+    a: Map<String, T>,
+    b: Map<String, T>,
+): Map<String, T> = a.mergeMaxStrategy(
+    begin = a,
+    end = b,
+    isMonotonic = true
+)
