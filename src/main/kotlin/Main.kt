@@ -15,48 +15,48 @@ private val Json = Json { ignoreUnknownKeys = true }
 fun main(args: Array<String>) {
     val arguments = Arguments.parse(args)
 
-    if (arguments.targetFilePath.isEmpty()) println("target file path is empty").also { return }
-    if (arguments.beginFilePath.isEmpty()) println("begin file path is empty").also { return }
-    if (arguments.endFilePath.isEmpty()) println("end file path is empty").also { return }
-
-    val configFileTarget = File(arguments.targetFilePath)
-    val configFileBegin = File(arguments.beginFilePath)
-    val configFileEnd = File(arguments.endFilePath)
+    if (!arguments.baseFile.exists()) println("Base file [${arguments.baseFile}] does not exist").also { return }
+    if (!arguments.sourceFile.exists()) println("Source file [${arguments.sourceFile}] does not exist").also { return }
+    if (arguments.originFile?.exists() == false) println("Origin file [${arguments.originFile}] does not exist").also { return }
 
     mergeSaves(
-        targetFile = configFileTarget,
-        beginFile = configFileBegin,
-        endFile = configFileEnd
+        baseFile = arguments.baseFile,
+        originFile = arguments.originFile,
+        sourceFile = arguments.sourceFile,
+        makeBackup = arguments.makeBackup == true
     )
+
+    println("Successfully merged progress into [${arguments.baseFile}]")
 }
 
-private fun mergeSaves(targetFile: File, beginFile: File, endFile: File) {
-    val targetSaveData = targetFile.readSaveData()
-    val beginSaveData = beginFile.readSaveData()
-    val endSaveData = endFile.readSaveData()
+private fun mergeSaves(baseFile: File, originFile: File?, sourceFile: File, makeBackup: Boolean) {
+    val baseSaveData = baseFile.readSaveData()
+    val originSaveData = originFile?.readSaveData() ?: SaveData.EMPTY
+    val sourceSaveData = sourceFile.readSaveData()
 
     val resultSaveData = mergeSaveData(
-        targetSaveData = targetSaveData,
-        beginSaveData = beginSaveData,
-        endSaveData = endSaveData,
+        baseSaveData = baseSaveData,
+        originSaveData = originSaveData,
+        sourceSaveData = sourceSaveData,
     )
 
-    targetFile.writeSaveData(resultSaveData)
+    if (makeBackup) baseFile.copyTo(File(baseFile.path + ".bak"), overwrite = true)
+    baseFile.writeSaveData(resultSaveData)
 }
 
 private fun mergeSaveData(
-    targetSaveData: SaveData,
-    beginSaveData: SaveData,
-    endSaveData: SaveData
+    baseSaveData: SaveData,
+    originSaveData: SaveData,
+    sourceSaveData: SaveData
 ): SaveData {
     val sslValueMergeHelper = MergeObjectHelper.create(
-        targetObj = targetSaveData.completeSave.sslValue,
-        beginObj = beginSaveData.completeSave.sslValue,
-        endObj = endSaveData.completeSave.sslValue,
+        baseObj = baseSaveData.completeSave.sslValue,
+        originObj = originSaveData.completeSave.sslValue,
+        sourceObj = sourceSaveData.completeSave.sslValue,
     )
 
     val newSslValue = sslValueMergeHelper {
-        targetObject.copy(
+        baseObj.copy(
             finishedObjs = SslValue::finishedObjs.merge(isMonotonic = true),
             objectiveStates = SslValue::objectiveStates.merge(),
             upgradesGiverData = SslValue::upgradesGiverData.merge(),
@@ -69,7 +69,7 @@ private fun mergeSaveData(
         )
     }
 
-    return targetSaveData.run { copy(completeSave = completeSave.copy(sslValue = newSslValue)) }
+    return baseSaveData.run { copy(completeSave = completeSave.copy(sslValue = newSslValue)) }
 }
 
 private fun File.readSaveData(): SaveData = SaveConfigInputStream(inputStream()).use {

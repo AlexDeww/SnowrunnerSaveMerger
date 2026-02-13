@@ -9,16 +9,16 @@ typealias PropMap<O, T> = Prop<O, Map<String, T>>
 interface MergeObjectHelper<O> {
 
     companion object {
-        fun <O> create(targetObj: O, beginObj: O, endObj: O) = object : MergeObjectHelper<O> {
-            override val targetObject: O = targetObj
-            override val beginObject: O = beginObj
-            override val endObject: O = endObj
+        fun <O> create(baseObj: O, originObj: O, sourceObj: O) = object : MergeObjectHelper<O> {
+            override val baseObj: O = baseObj
+            override val originObj: O = originObj
+            override val sourceObj: O = sourceObj
         }
     }
 
-    val targetObject: O
-    val beginObject: O
-    val endObject: O
+    val baseObj: O
+    val originObj: O
+    val sourceObj: O
 
 }
 
@@ -26,8 +26,8 @@ operator fun <O> MergeObjectHelper<O>.invoke(block: MergeObjectHelper<O>.() -> O
 
 @JvmName("doMerge")
 context(helper: MergeObjectHelper<O>)
-fun <O, T> Prop<O, T>.doMerge(block: (t: T, a: T, b: T) -> T): T = with(helper) {
-    block(get(targetObject), get(beginObject), get(endObject))
+fun <O, T> Prop<O, T>.doMerge(block: (b: T, o: T, s: T) -> T): T = with(helper) {
+    block(get(baseObj), get(originObj), get(sourceObj))
 }
 
 @JvmName("mergeSet")
@@ -36,16 +36,17 @@ fun <O, T> PropSet<O, T>.merge(
     isMonotonic: Boolean = false,
     keyProc: (T) -> String = { it.toString() },
 ) = with(helper) {
-    doMerge { t, a, b -> t.merge(a, b, isMonotonic, keyProc) }
+    doMerge { b, o, s -> b.merge(o, s, isMonotonic, keyProc) }
 }
 
 @JvmName("mergeMap")
 context(helper: MergeObjectHelper<O>)
 fun <O, T> PropMap<O, T>.merge(
     isMonotonic: Boolean = false,
-    areValueChanged: AreValueChangedProc<T> = ::defaultAreValueChanged
+    areValueChanged: AreValueChangedProc<T> = ::defaultAreValueChanged,
+    resolveValue: ResolveValueProc<T> = ::defaultResolveValue
 ) = with(helper) {
-    doMerge { t, a, b -> t.merge(a, b, isMonotonic, areValueChanged) }
+    doMerge { b, o, s -> b.merge(o, s, isMonotonic, areValueChanged, resolveValue) }
 }
 
 @JvmName("mergeMapMaxStrategy")
@@ -53,36 +54,38 @@ context(helper: MergeObjectHelper<O>)
 fun <O, T : Comparable<T>> PropMap<O, T>.mergeMaxStrategy(
     isMonotonic: Boolean = false
 ) = with(helper) {
-    doMerge { t, a, b -> t.mergeMaxStrategy(a, b, isMonotonic) }
+    doMerge { b, o, s -> b.mergeMaxStrategy(o, s, isMonotonic) }
 }
 
 fun <T> Map<String, T>.merge(
-    begin: Map<String, T>,
-    end: Map<String, T>,
+    origin: Map<String, T>,
+    source: Map<String, T>,
     isMonotonic: Boolean = false,
-    areValueChanged: AreValueChangedProc<T> = ::defaultAreValueChanged
+    areValueChanged: AreValueChangedProc<T> = ::defaultAreValueChanged,
+    resolveValue: ResolveValueProc<T> = ::defaultResolveValue
 ): Map<String, T> {
-    val diff = begin.diff(end, !isMonotonic, areValueChanged)
-    return this.applyDiff(diff)
+    val diff = origin.diff(source, !isMonotonic, areValueChanged)
+    return this.applyDiff(diff, resolveValue)
 }
 
 fun <T : Comparable<T>> Map<String, T>.mergeMaxStrategy(
-    begin: Map<String, T>,
-    end: Map<String, T>,
+    origin: Map<String, T>,
+    source: Map<String, T>,
     isMonotonic: Boolean = true,
 ): Map<String, T> = merge(
-    begin = begin,
-    end = end,
+    origin = origin,
+    source = source,
     isMonotonic = isMonotonic,
-    areValueChanged = { o, n -> n > o }
+    areValueChanged = { o, n -> n > o },
+    resolveValue = { o, n -> if (n > o) n else o }
 )
 
 fun <T> Set<T>.merge(
-    begin: Set<T>,
-    end: Set<T>,
+    origin: Set<T>,
+    source: Set<T>,
     isMonotonic: Boolean = false,
     keyProc: (T) -> String = { it.toString() },
 ): Set<T> {
-    val diff = begin.diff(end, !isMonotonic, keyProc)
+    val diff = origin.diff(source, !isMonotonic, keyProc)
     return this.applyDiffTo(mutableSetOf(), diff)
 }

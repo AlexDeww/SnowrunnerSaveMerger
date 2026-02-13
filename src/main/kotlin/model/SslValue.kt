@@ -15,7 +15,7 @@ data class SslValue(
     @SerialName("upgradesGiverData") val upgradesGiverData: UpgradesGiverData = UpgradesGiverData.EMPTY,
     @SerialName("levelGarageStatuses") val levelGarageStatuses: LevelGarageStatuses = LevelGarageStatuses.EMPTY,
     @SerialName("discoveredObjectives") val discoveredObjectives: Set<String> = emptySet(),
-    @SerialName("viewedUnactivatedObjectives") val viewedUnactivatedObjectives: Set<String> = emptySet(),
+    @SerialName("viewedUnactivatedObjectives") val viewedUnactivatedObjectives: ViewedUnactivatedObjectives = ViewedUnactivatedObjectives.EMPTY,
     @SerialName("watchPointsData") val watchPointsData: WatchPointsData = WatchPointsData.EMPTY,
     @SerialName("visitedLevels") val visitedLevels: Set<String> = emptySet(),
     @SerialName("persistentProfileData") val persistentProfileData: PersistentProfileData = PersistentProfileData.EMPTY,
@@ -49,6 +49,14 @@ data class SslValue(
     value class LevelGarageStatuses(val statuses: Map<String, Int>) {
         companion object {
             val EMPTY = LevelGarageStatuses(emptyMap())
+        }
+    }
+
+    @Serializable
+    @JvmInline
+    value class ViewedUnactivatedObjectives(val list: Set<String>) {
+        companion object {
+            val EMPTY = ViewedUnactivatedObjectives(emptySet())
         }
     }
 

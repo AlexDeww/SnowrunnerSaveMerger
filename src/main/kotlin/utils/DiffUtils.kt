@@ -4,11 +4,12 @@ import org.home.utils.DiffOperation.*
 
 typealias DiffResult<T> = List<DiffOperation<T>>
 typealias AreValueChangedProc<T> = (oldValue: T, newValue: T) -> Boolean
+typealias ResolveValueProc<T> = (oldValue: T, newValue: T) -> T
 
-sealed class DiffOperation<T> {
+sealed class DiffOperation<out T> {
     abstract val key: String
 
-    data class Delete<T>(override val key: String) : DiffOperation<T>()
+    data class Delete(override val key: String) : DiffOperation<Nothing>()
     data class Insert<T>(override val key: String, val value: T) : DiffOperation<T>()
     data class Change<T>(override val key: String, val value: T) : DiffOperation<T>()
 }
@@ -45,7 +46,7 @@ fun <T> Collection<T>.diff(
 
 fun <T> Map<String, T>.applyDiff(
     diffResult: DiffResult<T>,
-    resolveValue: (oldValue: T, newValue: T) -> T = { _, new -> new }
+    resolveValue: ResolveValueProc<T> = ::defaultResolveValue
 ): Map<String, T> {
     return if (diffResult.isEmpty()) this
     else applyDiffInternal(toMutableMap(), diffResult, resolveValue)
@@ -54,7 +55,7 @@ fun <T> Map<String, T>.applyDiff(
 fun <T> Collection<T>.applyDiff(
     diffResult: DiffResult<T>,
     keyProc: (T) -> String = { it.toString() },
-    resolveValue: (oldValue: T, newValue: T) -> T = { _, new -> new }
+    resolveValue: ResolveValueProc<T> = ::defaultResolveValue
 ): List<T> = applyDiffTo(
     destination = mutableListOf(),
     diffResult = diffResult,
@@ -66,7 +67,7 @@ fun <T, R : MutableCollection<T>> Collection<T>.applyDiffTo(
     destination: R,
     diffResult: DiffResult<T>,
     keyProc: (T) -> String = { it.toString() },
-    resolveValue: (oldValue: T, newValue: T) -> T = { _, new -> new }
+    resolveValue: ResolveValueProc<T> = ::defaultResolveValue
 ): R {
     if (diffResult.isEmpty()) destination.addAll(this)
     else this
@@ -79,10 +80,12 @@ fun <T, R : MutableCollection<T>> Collection<T>.applyDiffTo(
 
 fun <T> defaultAreValueChanged(old: T, new: T): Boolean = old != new
 
+fun <T> defaultResolveValue(old: T, new: T): T = new
+
 private fun <T, R : MutableMap<String, T>> applyDiffInternal(
     target: R,
     diffResult: DiffResult<T>,
-    resolveValue: (oldValue: T, newValue: T) -> T
+    resolveValue: ResolveValueProc<T>
 ): R {
     diffResult.forEach { op ->
         when (op) {
