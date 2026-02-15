@@ -12,16 +12,16 @@ this tool allows you to merge that data.
 
 ### What will be transferred
 
-  - `finishedObjs` - completed objectives
-  - `objectiveStates` - active objectives
-  - `discoveredObjectives` - discovered objectives
-  - `viewedUnactivatedObjectives` - discovered but not activated objectives
-  - `upgradesGiverData` - found upgrades
-  - `levelGarageStatuses` - discovered/unlocked garages
-  - `watchPointsData` - discovered/unlocked watchtowers
-  - `visitedLevels` - visited maps
-  - `discoveredTrucks` - number of discovered trucks
-  - `ownedTrucks` - discovered trucks
+  - Completed objectives (`finishedObjs`)
+  - Active objectives (`objectiveStates`)
+  - Discovered objectives (`discoveredObjectives`)
+  - Discovered but not activated objectives (`viewedUnactivatedObjectives`)
+  - Found upgrades (`upgradesGiverData`)
+  - Discovered/unlocked garages (`levelGarageStatuses`)
+  - Discovered/unlocked watchtowers (`watchPointsData`)
+  - Visited maps (`visitedLevels`)
+  - Number of discovered trucks (`discoveredTrucks`)
+  - Discovered trucks (`ownedTrucks`)
 
 ### How to transfer progress (Instructions)
 
@@ -30,7 +30,7 @@ For the merge to work correctly, the host must capture the world state before an
 1. Host: Copy the save file before starting the session → `origin`.
 2. Host: Take the updated save file after the session → `source`.
 3. Host: Send both files (`origin` and `source`) to the guest.
-4. Guest: Use the utility to merge them with your own save (`base`).
+4. Guest: Use the utility to merge them with your own save → `base`.
 
 ### Usage
 Run from the command line:
