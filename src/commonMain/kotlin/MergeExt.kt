@@ -6,9 +6,15 @@ import org.home.utils.*
 import kotlin.jvm.JvmName
 import org.home.utils.DiffOperation as DiffOp
 
+private typealias SslValueMergeHelper = MergeObjectHelper<SslValue>
+private typealias PersistentProfileDataMergeHelper = MergeObjectHelper<PersistentProfileData>
+
+private typealias SslValueProp<T> = Prop<SslValue, T>
+private typealias PersistentProfileDataProp<T> = Prop<PersistentProfileData, T>
+
 @JvmName("mergeSslValueWatchPointsData")
-context(helper: MergeObjectHelper<SslValue>)
-fun Prop<SslValue, SslValue.WatchPointsData>.merge() = with(helper) {
+context(helper: SslValueMergeHelper)
+fun SslValueProp<SslValue.WatchPointsData>.merge() = with(helper) {
     doMerge { b, o, s ->
         val diff = o.data.diff(s.data, allowDelete = false)
         val data = b.data.applyDiff(diff, ::resolveMaxStrategy)
@@ -17,16 +23,17 @@ fun Prop<SslValue, SslValue.WatchPointsData>.merge() = with(helper) {
 }
 
 @JvmName("mergeSslValueLevelGarageStatuses")
-context(helper: MergeObjectHelper<SslValue>)
-fun Prop<SslValue, SslValue.LevelGarageStatuses>.merge() = with(helper) {
+context(helper: SslValueMergeHelper)
+fun SslValueProp<SslValue.LevelGarageStatuses>.merge() = with(helper) {
     doMerge { b, o, s ->
-        SslValue.LevelGarageStatuses(b.statuses.mergeMaxStrategy(o.statuses, s.statuses))
+        val statuses = b.statuses.mergeMaxStrategy(o.statuses, s.statuses)
+        SslValue.LevelGarageStatuses(statuses)
     }
 }
 
 @JvmName("mergeSslValueObjectiveStates")
-context(helper: MergeObjectHelper<SslValue>)
-fun Prop<SslValue, SslValue.ObjectiveStates>.merge() = with(helper) {
+context(helper: SslValueMergeHelper)
+fun SslValueProp<SslValue.ObjectiveStates>.merge() = with(helper) {
     doMerge { b, o, s ->
         val completionDeletes = (sourceObj.finishedObjs - originObj.finishedObjs).map { DiffOp.Delete(it) }
         val diff = (o.states.diff(s.states) + completionDeletes).filter { it.key !in baseObj.finishedObjs }
@@ -35,8 +42,8 @@ fun Prop<SslValue, SslValue.ObjectiveStates>.merge() = with(helper) {
 }
 
 @JvmName("mergeSslValueViewedUnactivatedObjectives")
-context(helper: MergeObjectHelper<SslValue>)
-fun Prop<SslValue, SslValue.ViewedUnactivatedObjectives>.merge() = with(helper) {
+context(helper: SslValueMergeHelper)
+fun SslValueProp<SslValue.ViewedUnactivatedObjectives>.merge() = with(helper) {
     doMerge { b, o, s ->
         val activated = sourceObj.objectiveStates.states.keys - originObj.objectiveStates.states.keys
         val finished = sourceObj.finishedObjs - originObj.finishedObjs
@@ -49,8 +56,8 @@ fun Prop<SslValue, SslValue.ViewedUnactivatedObjectives>.merge() = with(helper) 
 }
 
 @JvmName("mergeSslValueUpgradesGiverData")
-context(helper: MergeObjectHelper<SslValue>)
-fun Prop<SslValue, SslValue.UpgradesGiverData>.merge() = with(helper) {
+context(helper: SslValueMergeHelper)
+fun SslValueProp<SslValue.UpgradesGiverData>.merge() = with(helper) {
     doMerge { b, o, s ->
         val diff = o.data.diff(s.data, allowDelete = false)
         val data = b.data.applyDiff(diff, ::resolveMaxStrategy)
@@ -59,8 +66,8 @@ fun Prop<SslValue, SslValue.UpgradesGiverData>.merge() = with(helper) {
 }
 
 @JvmName("mergeSslValuePersistentProfileData")
-context(helper: MergeObjectHelper<SslValue>)
-fun Prop<SslValue, PersistentProfileData>.merge(): PersistentProfileData = with(helper) {
+context(helper: SslValueMergeHelper)
+fun SslValueProp<PersistentProfileData>.merge(): PersistentProfileData = with(helper) {
     doMerge { b, o, s ->
         val persistentProfileDataMergeHelper = MergeObjectHelper.create(b, o, s)
         persistentProfileDataMergeHelper {
@@ -73,8 +80,8 @@ fun Prop<SslValue, PersistentProfileData>.merge(): PersistentProfileData = with(
 }
 
 @JvmName("mergePersistentProfileDataDiscoveredTrucks")
-context(helper: MergeObjectHelper<PersistentProfileData>)
-fun Prop<PersistentProfileData, PersistentProfileData.DiscoveredTrucks>.merge() = with(helper) {
+context(helper: PersistentProfileDataMergeHelper)
+fun PersistentProfileDataProp<PersistentProfileData.DiscoveredTrucks>.merge() = with(helper) {
     doMerge { b, o, s ->
         val diff = o.trucks.diff(s.trucks, allowDelete = false)
         val trucks = b.trucks.applyDiff(diff) { o, n -> if (n.current > o.current) n else o }
@@ -83,8 +90,8 @@ fun Prop<PersistentProfileData, PersistentProfileData.DiscoveredTrucks>.merge() 
 }
 
 @JvmName("mergePersistentProfileDataOwnedTrucks")
-context(helper: MergeObjectHelper<PersistentProfileData>)
-fun Prop<PersistentProfileData, PersistentProfileData.OwnedTrucks>.merge() = with(helper) {
+context(helper: PersistentProfileDataMergeHelper)
+fun PersistentProfileDataProp<PersistentProfileData.OwnedTrucks>.merge() = with(helper) {
     doMerge { b, o, s ->
         val diff = o.trucks.diff(s.trucks, allowDelete = false)
         PersistentProfileData.OwnedTrucks(b.trucks.applyDiff(diff))
