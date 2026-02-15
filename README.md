@@ -1,7 +1,7 @@
 # SnowRunner Save Merger
 
 A utility for synchronizing co-op progress in SnowRunner.
-Allows guests to transfer completed contracts, discovered watchtowers, 
+Allows guests to merge completed contracts, discovered watchtowers, 
 and found upgrades from the host’s save into their own personal save.
 
 ### Why is this needed?
@@ -10,7 +10,7 @@ In SnowRunner, world progress (completed contracts, revealed maps) is saved only
 If you played in co-op on a friend’s session and want those tasks to be marked as completed in your single-player game, 
 this tool allows you to merge that data.
 
-### What will be transferred
+### What will be merged
 
   - Completed objectives (`finishedObjs`)
   - Active objectives (`objectiveStates`)
@@ -46,7 +46,7 @@ If something is completed in either:
 
 it will be marked as completed in the final merged save.
 
-### How to transfer progress (Instructions)
+### How to merge progress (Instructions)
 
 For the merge to work correctly, the host must capture the world state before and after the co-op session:
 
