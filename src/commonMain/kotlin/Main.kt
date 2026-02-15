@@ -1,14 +1,12 @@
 package org.home
 
+import kotlinx.io.files.Path
+import kotlinx.io.readString
 import kotlinx.serialization.json.*
+import kotlinx.serialization.json.io.encodeToSink
 import org.home.model.SaveData
 import org.home.model.SslValue
-import org.home.utils.MergeObjectHelper
-import org.home.utils.invoke
-import org.home.utils.merge
-import java.io.File
-import java.io.FileInputStream
-import java.io.FilterInputStream
+import org.home.utils.*
 
 private val Json = Json { ignoreUnknownKeys = true }
 
@@ -29,7 +27,7 @@ fun main(args: Array<String>) {
     println("Successfully merged progress into [${arguments.baseFile}]")
 }
 
-private fun mergeSaves(baseFile: File, originFile: File?, sourceFile: File, makeBackup: Boolean) {
+private fun mergeSaves(baseFile: Path, originFile: Path?, sourceFile: Path, makeBackup: Boolean) {
     val baseSaveData = baseFile.readSaveData()
     val originSaveData = originFile?.readSaveData() ?: SaveData.EMPTY
     val sourceSaveData = sourceFile.readSaveData()
@@ -40,7 +38,7 @@ private fun mergeSaves(baseFile: File, originFile: File?, sourceFile: File, make
         sourceSaveData = sourceSaveData,
     )
 
-    if (makeBackup) baseFile.copyTo(File(baseFile.path + ".bak"), overwrite = true)
+    if (makeBackup) baseFile.copyTo(Path("$baseFile.bak"))
     baseFile.writeSaveData(resultSaveData)
 }
 
@@ -72,17 +70,12 @@ private fun mergeSaveData(
     return baseSaveData.run { copy(completeSave = completeSave.copy(sslValue = newSslValue)) }
 }
 
-private fun File.readSaveData(): SaveData = SaveConfigInputStream(inputStream()).use {
-    Json.decodeFromStream<SaveData>(it)
+private fun Path.readSaveData(): SaveData = inputSource().use { source ->
+    val rawData = source.readString().trimEnd { it == '\u0000' }
+    Json.decodeFromString<SaveData>(rawData)
 }
 
-private fun File.writeSaveData(saveData: SaveData) = outputStream().use {
-    Json.encodeToStream(saveData, it)
-    it.write(0)
-}
-
-private class SaveConfigInputStream(fileStream: FileInputStream) : FilterInputStream(fileStream) {
-    override fun read(): Int = super.read().let { if (it == 0) -1 else it }
-    override fun read(b: ByteArray, off: Int, len: Int): Int =
-        super.read(b, off, len).let { if (it != -1 && b[off + it - 1] == 0.toByte()) it - 1 else it }
+private fun Path.writeSaveData(saveData: SaveData) = outputSink().use {
+    Json.encodeToSink(saveData, it)
+    it.writeByte(0)
 }

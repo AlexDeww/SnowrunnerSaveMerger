@@ -5,6 +5,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.home.json.CatchAllJsonSerializer
 import org.home.json.OtherJsonNodesCollection
+import kotlin.jvm.JvmInline
 
 @Serializable(with = PersistentProfileData.Serializer::class)
 @KeepGeneratedSerializer

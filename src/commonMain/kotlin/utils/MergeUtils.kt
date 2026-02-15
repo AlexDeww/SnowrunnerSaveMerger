@@ -1,5 +1,6 @@
 package org.home.utils
 
+import kotlin.jvm.JvmName
 import kotlin.reflect.KProperty1
 
 typealias Prop<O, T> = KProperty1<O, T>

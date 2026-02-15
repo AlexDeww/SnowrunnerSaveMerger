@@ -97,3 +97,7 @@ private fun <T, R : MutableMap<String, T>> applyDiffInternal(
 
     return target
 }
+
+private fun <T, R : MutableMap<String, T>> R.compute(key: String, block: (key: String, value: T?) -> T) {
+    this[key] = block(key, this[key])
+}

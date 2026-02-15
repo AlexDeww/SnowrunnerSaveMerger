@@ -9,6 +9,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonTransformingSerializer
 import kotlinx.serialization.json.jsonObject
+import kotlin.jvm.JvmInline
 
 @OptIn(ExperimentalSerializationApi::class)
 @MetaSerializable

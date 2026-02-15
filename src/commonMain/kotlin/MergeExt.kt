@@ -3,6 +3,7 @@ package org.home
 import org.home.model.PersistentProfileData
 import org.home.model.SslValue
 import org.home.utils.*
+import kotlin.jvm.JvmName
 import org.home.utils.DiffOperation as DiffOp
 
 @JvmName("mergeSslValueWatchPointsData")

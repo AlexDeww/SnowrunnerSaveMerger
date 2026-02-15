@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import org.home.json.CatchAllJsonSerializer
 import org.home.json.OtherJsonNodesCollection
+import kotlin.jvm.JvmInline
 
 @Serializable(with = SslValue.Serializer::class)
 @KeepGeneratedSerializer
