@@ -88,5 +88,5 @@ fun <T> Set<T>.merge(
     keyProc: KeyProc<T> = ::defaultKeyProc,
 ): Set<T> {
     val diff = origin.diff(source, !asMonotonic, keyProc)
-    return this.applyDiffTo(mutableSetOf(), diff)
+    return this.applyDiffTo(mutableSetOf(), diff, keyProc)
 }
