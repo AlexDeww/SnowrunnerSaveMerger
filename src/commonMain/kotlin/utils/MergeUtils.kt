@@ -21,9 +21,9 @@ interface MergeObjectHelper<O> {
     val originObj: O
     val sourceObj: O
 
-}
+    operator fun invoke(block: MergeObjectHelper<O>.() -> O): O = block()
 
-operator fun <O> MergeObjectHelper<O>.invoke(block: MergeObjectHelper<O>.() -> O): O = block()
+}
 
 @JvmName("doMerge")
 context(helper: MergeObjectHelper<O>)
@@ -32,51 +32,51 @@ fun <O, T> Prop<O, T>.doMerge(block: (b: T, o: T, s: T) -> T): T = with(helper) 
 }
 
 @JvmName("mergeSet")
-context(helper: MergeObjectHelper<O>)
+context(_: MergeObjectHelper<O>)
 fun <O, T> PropSet<O, T>.merge(
-    isMonotonic: Boolean = false,
+    asMonotonic: Boolean = false,
     keyProc: KeyProc<T> = ::defaultKeyProc,
-) = with(helper) {
-    doMerge { b, o, s -> b.merge(o, s, isMonotonic, keyProc) }
+) = doMerge { b, o, s ->
+    b.merge(o, s, asMonotonic, keyProc)
 }
 
 @JvmName("mergeMap")
-context(helper: MergeObjectHelper<O>)
+context(_: MergeObjectHelper<O>)
 fun <O, T> PropMap<O, T>.merge(
-    isMonotonic: Boolean = false,
+    asMonotonic: Boolean = false,
     areValueChanged: AreValueChangedProc<T> = ::defaultAreValueChanged,
     resolveValue: ResolveValueProc<T> = ::defaultResolveValue
-) = with(helper) {
-    doMerge { b, o, s -> b.merge(o, s, isMonotonic, areValueChanged, resolveValue) }
+) = doMerge { b, o, s ->
+    b.merge(o, s, asMonotonic, areValueChanged, resolveValue)
 }
 
 @JvmName("mergeMapMaxStrategy")
-context(helper: MergeObjectHelper<O>)
+context(_: MergeObjectHelper<O>)
 fun <O, T : Comparable<T>> PropMap<O, T>.mergeMaxStrategy(
-    isMonotonic: Boolean = false
-) = with(helper) {
-    doMerge { b, o, s -> b.mergeMaxStrategy(o, s, isMonotonic) }
+    asMonotonic: Boolean = false
+) = doMerge { b, o, s ->
+    b.mergeMaxStrategy(o, s, asMonotonic)
 }
 
 fun <T> Map<String, T>.merge(
     origin: Map<String, T>,
     source: Map<String, T>,
-    isMonotonic: Boolean = false,
+    asMonotonic: Boolean = false,
     areValueChanged: AreValueChangedProc<T> = ::defaultAreValueChanged,
     resolveValue: ResolveValueProc<T> = ::defaultResolveValue
 ): Map<String, T> {
-    val diff = origin.diff(source, !isMonotonic, areValueChanged)
+    val diff = origin.diff(source, !asMonotonic, areValueChanged)
     return this.applyDiff(diff, resolveValue)
 }
 
 fun <T : Comparable<T>> Map<String, T>.mergeMaxStrategy(
     origin: Map<String, T>,
     source: Map<String, T>,
-    isMonotonic: Boolean = true,
+    asMonotonic: Boolean = true,
 ): Map<String, T> = merge(
     origin = origin,
     source = source,
-    isMonotonic = isMonotonic,
+    asMonotonic = asMonotonic,
     areValueChanged = { o, n -> n > o },
     resolveValue = { o, n -> if (n > o) n else o }
 )
@@ -84,9 +84,9 @@ fun <T : Comparable<T>> Map<String, T>.mergeMaxStrategy(
 fun <T> Set<T>.merge(
     origin: Set<T>,
     source: Set<T>,
-    isMonotonic: Boolean = false,
+    asMonotonic: Boolean = false,
     keyProc: KeyProc<T> = ::defaultKeyProc,
 ): Set<T> {
-    val diff = origin.diff(source, !isMonotonic, keyProc)
+    val diff = origin.diff(source, !asMonotonic, keyProc)
     return this.applyDiffTo(mutableSetOf(), diff)
 }

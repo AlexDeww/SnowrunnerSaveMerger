@@ -11,7 +11,7 @@ import kotlin.jvm.JvmInline
 @KeepGeneratedSerializer
 data class PersistentProfileData(
     @SerialName("discoveredTrucks") val discoveredTrucks: DiscoveredTrucks = DiscoveredTrucks.EMPTY,
-    @SerialName("ownedTrucks") val ownedTrucks: OwnedTrucks = OwnedTrucks.EMPTY,
+    @SerialName("unlockedItemNames") val unlockedItemNames: UnlockedItemNames = UnlockedItemNames.EMPTY,
     private val _otherNodes: OtherJsonNodesCollection = OtherJsonNodesCollection.EMPTY
 ) {
 
@@ -31,9 +31,9 @@ data class PersistentProfileData(
 
     @Serializable
     @JvmInline
-    value class OwnedTrucks(val trucks: Map<String, Int>) {
+    value class UnlockedItemNames(val names: Map<String, Boolean>) {
         companion object {
-            val EMPTY = OwnedTrucks(emptyMap())
+            val EMPTY = UnlockedItemNames(emptyMap())
         }
     }
 

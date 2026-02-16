@@ -21,7 +21,7 @@ this tool allows you to merge that data.
   - Discovered/unlocked watchtowers (`watchPointsData`)
   - Visited maps (`visitedLevels`)
   - Number of discovered trucks (`discoveredTrucks`)
-  - Discovered trucks (`ownedTrucks`)
+  - Unlocked items (`unlockedItemNames`)
 
 ### How merge works
 

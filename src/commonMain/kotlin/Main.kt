@@ -55,14 +55,14 @@ private fun mergeSaveData(
 
     val newSslValue = sslValueMergeHelper {
         baseObj.copy(
-            finishedObjs = SslValue::finishedObjs.merge(isMonotonic = true),
+            finishedObjs = SslValue::finishedObjs.merge(asMonotonic = true),
             objectiveStates = SslValue::objectiveStates.merge(),
             upgradesGiverData = SslValue::upgradesGiverData.merge(),
             levelGarageStatuses = SslValue::levelGarageStatuses.merge(),
-            discoveredObjectives = SslValue::discoveredObjectives.merge(isMonotonic = true),
+            discoveredObjectives = SslValue::discoveredObjectives.merge(asMonotonic = true),
             viewedUnactivatedObjectives = SslValue::viewedUnactivatedObjectives.merge(),
             watchPointsData = SslValue::watchPointsData.merge(),
-            visitedLevels = SslValue::visitedLevels.merge(isMonotonic = true),
+            visitedLevels = SslValue::visitedLevels.merge(asMonotonic = true),
             persistentProfileData = SslValue::persistentProfileData.merge()
         )
     }
