@@ -35,7 +35,7 @@ fun <O, T> Prop<O, T>.doMerge(block: (b: T, o: T, s: T) -> T): T = with(helper) 
 context(helper: MergeObjectHelper<O>)
 fun <O, T> PropSet<O, T>.merge(
     isMonotonic: Boolean = false,
-    keyProc: (T) -> String = { it.toString() },
+    keyProc: KeyProc<T> = ::defaultKeyProc,
 ) = with(helper) {
     doMerge { b, o, s -> b.merge(o, s, isMonotonic, keyProc) }
 }
@@ -85,7 +85,7 @@ fun <T> Set<T>.merge(
     origin: Set<T>,
     source: Set<T>,
     isMonotonic: Boolean = false,
-    keyProc: (T) -> String = { it.toString() },
+    keyProc: KeyProc<T> = ::defaultKeyProc,
 ): Set<T> {
     val diff = origin.diff(source, !isMonotonic, keyProc)
     return this.applyDiffTo(mutableSetOf(), diff)

@@ -5,6 +5,7 @@ import org.home.utils.DiffOperation.*
 typealias DiffResult<T> = List<DiffOperation<T>>
 typealias AreValueChangedProc<T> = (oldValue: T, newValue: T) -> Boolean
 typealias ResolveValueProc<T> = (oldValue: T, newValue: T) -> T
+typealias KeyProc<T> = (idx: Int, item: T) -> String
 
 sealed class DiffOperation<out T> {
     abstract val key: String
@@ -34,12 +35,21 @@ fun <T> Map<String, T>.diff(
 fun <T> Collection<T>.diff(
     newValue: Collection<T>,
     allowDelete: Boolean = true,
-    keyProc: (T) -> String = { it.toString() },
+    keyProc: KeyProc<T> = ::defaultKeyProc,
     areValueChanged: AreValueChangedProc<T> = ::defaultAreValueChanged
 ): DiffResult<T> = this
-    .associateBy(keyProc)
+    .withIndex()
+    .associateBy(
+        keySelector = { keyProc(it.index, it.value) },
+        valueTransform = { it.value }
+    )
     .diff(
-        newValue = newValue.associateBy(keyProc),
+        newValue = newValue
+            .withIndex()
+            .associateBy(
+                keySelector = { keyProc(it.index, it.value) },
+                valueTransform = { it.value }
+            ),
         allowDelete = allowDelete,
         areValueChanged = areValueChanged
     )
@@ -54,7 +64,7 @@ fun <T> Map<String, T>.applyDiff(
 
 fun <T> Collection<T>.applyDiff(
     diffResult: DiffResult<T>,
-    keyProc: (T) -> String = { it.toString() },
+    keyProc: KeyProc<T> = ::defaultKeyProc,
     resolveValue: ResolveValueProc<T> = ::defaultResolveValue
 ): List<T> = applyDiffTo(
     destination = mutableListOf(),
@@ -66,12 +76,17 @@ fun <T> Collection<T>.applyDiff(
 fun <T, R : MutableCollection<T>> Collection<T>.applyDiffTo(
     destination: R,
     diffResult: DiffResult<T>,
-    keyProc: (T) -> String = { it.toString() },
+    keyProc: KeyProc<T> = ::defaultKeyProc,
     resolveValue: ResolveValueProc<T> = ::defaultResolveValue
 ): R {
     if (diffResult.isEmpty()) destination.addAll(this)
     else this
-        .associateByTo(linkedMapOf(), keyProc)
+        .withIndex()
+        .associateByTo(
+            destination = linkedMapOf(),
+            keySelector = { keyProc(it.index, it.value) },
+            valueTransform = { it.value }
+        )
         .let { applyDiffInternal(it, diffResult, resolveValue) }
         .let { destination.addAll(it.values) }
 
@@ -81,6 +96,8 @@ fun <T, R : MutableCollection<T>> Collection<T>.applyDiffTo(
 fun <T> defaultAreValueChanged(old: T, new: T): Boolean = old != new
 
 fun <T> defaultResolveValue(old: T, new: T): T = new
+
+fun <T> defaultKeyProc(idx: Int, item: T): String = item.toString()
 
 private fun <T, R : MutableMap<String, T>> applyDiffInternal(
     target: R,
