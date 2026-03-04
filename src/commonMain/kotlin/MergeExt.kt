@@ -101,7 +101,12 @@ fun PersistentProfileDataProp<PersistentProfileData.UnlockedItemNames>.merge() =
 @JvmName("mergePersistentProfileDataAddons")
 context(_: PersistentProfileDataMergeHelper)
 fun PersistentProfileDataProp<PersistentProfileData.Addons>.merge() = doMerge { b, o, s ->
-    val addons = b.addons.merge(o.addons, s.addons, asMonotonic = true)
+    val addons = b.addons.merge(
+        origin = o.addons,
+        source = s.addons,
+        asMonotonic = true,
+        resolveValue = { old, _ -> old }
+    )
     PersistentProfileData.Addons(addons)
 }
 
