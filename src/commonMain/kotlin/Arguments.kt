@@ -12,7 +12,7 @@ class Arguments private constructor() {
         fun parse(args: Array<String>): Arguments = Arguments().apply { parser.parse(args) }
     }
 
-    private val parser = ArgParser("SnowrunnerSaveMerger")
+    private val parser = ArgParser("SnowRunnerSaveMerger")
 
     val baseFile by parser.option(ArgFile, "base", "b", "Your save file").required()
     val sourceFile by parser.option(ArgFile, "source", "s", "Source save file").required()

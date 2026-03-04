@@ -60,7 +60,9 @@ fun SslValueProp<PersistentProfileData>.merge(): PersistentProfileData = doMerge
     persistentProfileDataMergeHelper {
         b.copy(
             discoveredTrucks = PersistentProfileData::discoveredTrucks.merge(),
+            discoveredUpgrades = PersistentProfileData::discoveredUpgrades.merge(),
             unlockedItemNames = PersistentProfileData::unlockedItemNames.merge(),
+            addons = PersistentProfileData::addons.merge(),
         )
     }
 }
@@ -77,11 +79,30 @@ fun PersistentProfileDataProp<PersistentProfileData.DiscoveredTrucks>.merge() = 
     PersistentProfileData.DiscoveredTrucks(trucks)
 }
 
+@JvmName("mergePersistentProfileDataDiscoveredUpgrades")
+context(_: PersistentProfileDataMergeHelper)
+fun PersistentProfileDataProp<PersistentProfileData.DiscoveredUpgrades>.merge() = doMerge { b, o, s ->
+    val upgrades = b.upgrades.merge(
+        origin = o.upgrades,
+        source = s.upgrades,
+        asMonotonic = true,
+        resolveValue = { old, new -> if (new.current > old.current) new else old }
+    )
+    PersistentProfileData.DiscoveredUpgrades(upgrades)
+}
+
 @JvmName("mergePersistentProfileDataUnlockedItemNames")
 context(_: PersistentProfileDataMergeHelper)
 fun PersistentProfileDataProp<PersistentProfileData.UnlockedItemNames>.merge() = doMerge { b, o, s ->
     val names = b.names.merge(o.names, s.names, asMonotonic = true)
     PersistentProfileData.UnlockedItemNames(names)
+}
+
+@JvmName("mergePersistentProfileDataAddons")
+context(_: PersistentProfileDataMergeHelper)
+fun PersistentProfileDataProp<PersistentProfileData.Addons>.merge() = doMerge { b, o, s ->
+    val addons = b.addons.merge(o.addons, s.addons, asMonotonic = true)
+    PersistentProfileData.Addons(addons)
 }
 
 private fun <T : Comparable<T>> resolveMaxStrategy(
